@@ -1,0 +1,21 @@
+version: '3.6'
+services:
+  node:
+    container_name: node
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile
+    networks:
+      - services-tier
+    ports:
+      - $GLS_GATE_HOST:$GLS_GATE_PORT:$GLS_GATE_PORT
+    environment:
+      - GLS_DAY_START
+      - GLS_METRICS_HOST
+      - GLS_METRICS_PORT
+      - GLS_GATE_HOST
+      - GLS_GATE_PORT
+
+networks:
+  services-tier:

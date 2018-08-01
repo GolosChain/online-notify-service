@@ -1,0 +1,22 @@
+{
+    "name": "notify-online-service",
+    "version": "0.0.1",
+    "description": "",
+    "main": "./src/Main.js",
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "prettier": {
+        "singleQuote": true,
+        "tabWidth": 4,
+        "semi": true,
+        "trailingComma": "es5",
+        "printWidth": 100
+    },
+    "author": "golos.io",
+    "license": "GPL-3.0",
+    "dependencies": {
+        "gls-core-service": "git+https://github.com/GolosChain/core-service.git",
+        "ramda": "^0.25.0"
+    }
+}
