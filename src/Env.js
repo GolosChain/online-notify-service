@@ -2,5 +2,5 @@
 const env = process.env;
 
 module.exports = {
-    // TODO -
+    GLS_FACADE_CONNECT: env.GLS_FACADE_CONNECT,
 };
