@@ -8,10 +8,6 @@ module.exports = MongoDB.makeModel(
             type: String,
             required: true,
         },
-        online: {
-            type: Boolean,
-            default: false,
-        },
         show: {
             vote: {
                 type: Boolean,
