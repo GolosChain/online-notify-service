@@ -1,6 +1,6 @@
 {
     "name": "online-notify-service",
-    "version": "0.0.1",
+    "version": "0.1.0",
     "description": "",
     "main": "./src/Main.js",
     "scripts": {
