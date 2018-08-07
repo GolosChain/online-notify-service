@@ -58,39 +58,40 @@ class Notify extends BasicService {
 
     async _getOptions({ user }) {
         const time = new Date();
-        const data = await Subscribe.findOne({ user }, { show: true }, { lean: true });
-
-        if (!data) {
-            throw errors.E400.error;
-        }
+        const model = await this._findOrCreateSubscribe(user);
 
         stats.timing('get_options', new Date() - time);
-        return data.show;
+        return model.show;
     }
 
     async _setOptions({ user, data }) {
-        const time = new Data();
+        const time = new Date();
 
-        await Option.updateOne(
-            {
-                user,
-            },
-            {
-                $set: {
-                    user,
-                    $set: {
-                        show: data,
-                    },
-                },
-            },
-            {
-                upsert: true,
-                runValidators: true,
-            }
-        );
+        try {
+            const model = await this._findOrCreateSubscribe(user);
 
-        stats.timing('set_options', new Date() - time);
-        return 'Ok';
+            model.show = Object.assign({}, model.show, data);
+
+            await model.save();
+
+            stats.timing('set_options', new Date() - time);
+        } catch (error) {
+            logger.error(error);
+            stats.increment('options_invalid_request');
+            throw errors.E400.error;
+        }
+    }
+
+    async _findOrCreateSubscribe(user) {
+        let model = await Subscribe.findOne({ user });
+
+        if (!model) {
+            model = await new Subscribe({ user });
+
+            await model.save();
+        }
+
+        return model;
     }
 
     async _transfer(data) {

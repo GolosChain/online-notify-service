@@ -2,14 +2,16 @@ const core = require('gls-core-service');
 const stats = core.Stats.client;
 const logger = core.Logger;
 const BasicService = core.service.Basic;
+const MongoDB = core.service.MongoDB;
 const env = require('./Env');
+const Notify = require('./service/Notify');
 
 class Main extends BasicService {
     constructor() {
         super();
 
         this.printEnvBasedConfig(env);
-        this.addNested(); // TODO -
+        this.addNested(new MongoDB(), new Notify());
         this.stopOnExit();
     }
 
