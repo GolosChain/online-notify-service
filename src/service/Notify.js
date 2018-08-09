@@ -117,11 +117,12 @@ class Notify extends BasicService {
                 continue;
             }
 
-            const subscribe = await Subscribe.find({ user }, {}, { lean: true });
+            let subscribe = await Subscribe.findOne({ user });
 
             if (!subscribe) {
-                delete data[user];
-                continue;
+                subscribe = new Subscribe({ user });
+
+                await subscribe.save();
             }
 
             for (let event of Object.keys(data[user])) {
@@ -145,7 +146,7 @@ class Notify extends BasicService {
 
         routing.delete(channelId);
 
-        if (!routing.size()) {
+        if (!routing.size) {
             this._routingMapping.delete(user);
         }
     }
@@ -162,7 +163,7 @@ class Notify extends BasicService {
             try {
                 await this._gate.sendTo('facade', 'transfer', {
                     channelId,
-                    requestId,
+                    method: 'onlineNotify',
                     user,
                     result: data,
                 });
