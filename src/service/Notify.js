@@ -61,7 +61,7 @@ class Notify extends BasicService {
         const model = await this._findOrCreateSubscribe(user);
 
         stats.timing('get_options', new Date() - time);
-        return model.show;
+        return { show: model.show };
     }
 
     async _setOptions({ user, data }) {
@@ -70,7 +70,7 @@ class Notify extends BasicService {
         try {
             const model = await this._findOrCreateSubscribe(user);
 
-            model.show = Object.assign({}, model.show, data);
+            model.show = Object.assign({}, model.show, data.show);
 
             await model.save();
 
