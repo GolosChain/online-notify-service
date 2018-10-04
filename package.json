@@ -16,7 +16,7 @@
     "author": "golos.io",
     "license": "GPL-3.0",
     "dependencies": {
-        "gls-core-service": "git+https://github.com/GolosChain/core-service.git#3cf2bf87ca8d29307ebf224ed9d3502b15d2e2df",
+        "gls-core-service": "^2.2.1",
         "ramda": "^0.25.0"
     }
 }
