@@ -26,8 +26,8 @@ class Connector extends BasicConnector {
                 unsubscribe: this._subscribe.unsubscribe.bind(this._subscribe),
                 getOptions: this._options.getOptions.bind(this._options),
                 setOptions: this._options.setOptions.bind(this._options),
-                getHistory: this._history.getHistory.bind(this._history),
-                getHistoryFresh: this._history.getHistoryFresh.bind(this._history),
+                history: this._history.getHistory.bind(this._history),
+                historyFresh: this._history.getHistoryFresh.bind(this._history),
                 transfer: this._transfer.handle.bind(this._transfer),
             },
             requiredClients: {
