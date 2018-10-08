@@ -7,39 +7,41 @@
 ### API
 
  ```
- subscribe:
- {
-     user: <string>        // Имя пользователя
-     channelId: <string>   // Идентификатор канала
-     requestId: <string>   // Идентификатор запроса
- }
+ subscribe:                // Подписаться на рассылку эвентов
+     user <string>         // Имя пользователя
+     channelId <string>    // Идентификатор канала
+     requestId <string>    // Идентификатор запроса
 
- unsubscribe:
- {
-     user: <string>        // Имя пользователя
-     channelId: <string>   // Идентификатор канала
- }
+ unsubscribe:              // Отписаться от рассылки эвентов
+     user <string>         // Имя пользователя
+     channelId <string>    // Идентификатор канала
 
- getOptions:
- {
-     user: <string>        // Имя пользователя
- }
+ getOptions:               // Получить настройки пользователя
+     user <string>         // Имя пользователя
 
- setOptions:
- {
-     user: <string>        // Имя пользователя
-     data: <
+ setOptions:               // Установить настройки пользователя
+     user <string>         // Имя пользователя
+     data <                // Набор данных
         string(event) ->   // Тип события
         boolean(on/off)    // Рассылать или нет
      >
- }
 
- transfer:
-     data: <
+ transfer:                 // Переслать данные пользователю
+     data <                // Набор данных
         string(user) ->    // Имя пользователя
         string(event) ->   // Тип события
         Object(eventData)  // Данные события (любой формат)
      >
+     
+ history:                          // Получение истории эвентов относительно настроек
+     user <string>                 // Имя пользователя
+     fromId <string|null>(null)    // Идентификатор с которого начать
+     limit <number>(10)            // Количество записей
+     markAsViewed <boolean>(true)  // Пометить ли их прочитанными
+     freshOnly <boolean>(false)    // Вывести ли только не прочитанные
+
+ historyFresh:                     // Получение количества непрочитанных эвентов относительно настроек
+     user <string>                 // Имя пользователя
 
  ```
 
