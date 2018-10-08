@@ -28,19 +28,23 @@ class Transfer extends BasicController {
 
     async _filtrateTransferByOptions(data) {
         for (let user of Object.keys(data)) {
+            const result = [];
+
             if (!this.connector.routingMapping.has(user)) {
                 continue;
             }
 
             const subscribe = await this._optionsController.findOrCreateModel(user);
 
-            for (let event of Object.keys(data[user])) {
-                if (!subscribe.show[event]) {
-                    delete data[user][event];
+            for (let event of data[user]) {
+                if (subscribe.show[event.eventType]) {
+                    result.push(event);
                 }
             }
 
-            if (Object.keys(data[user]).length === 0) {
+            if (result.length) {
+                data[user] = result;
+            } else {
                 delete data[user];
             }
         }
