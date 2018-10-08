@@ -22,14 +22,15 @@ services:
     networks:
       - services-tier
     ports:
-      - $GLS_GATE_HOST:$GLS_GATE_PORT:$GLS_GATE_PORT
+      - $GLS_CONNECTOR_HOST:$GLS_CONNECTOR_PORT:$GLS_CONNECTOR_PORT
     environment:
       - GLS_FACADE_CONNECT
+      - GLS_NOTIFY_CONNECT
       - GLS_DAY_START
       - GLS_METRICS_HOST
       - GLS_METRICS_PORT
-      - GLS_GATE_HOST
-      - GLS_GATE_PORT
+      - GLS_CONNECTOR_HOST
+      - GLS_CONNECTOR_PORT
       - GLS_MONGO_CONNECT
 
 volumes:
