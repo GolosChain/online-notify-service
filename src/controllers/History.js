@@ -6,33 +6,24 @@ class History extends BasicController {
     async getHistory({ user, fromId = null, limit = 10, markAsViewed = true, freshOnly = false }) {
         const types = await this._getUserRequiredTypes(user);
         const params = { user, types, fromId, limit, markAsViewed, freshOnly };
-        const response = await this.sendTo('notify', 'history', params);
 
-        if (response.error) {
-            throw response.error;
-        } else {
-            return response.result;
-        }
+        return await this.callService('notify', 'history', params);
     }
 
     async getHistoryFresh({ user }) {
         const types = await this._getUserRequiredTypes(user);
         const params = { user, types };
-        const response = await this.sendTo('notify', 'historyFresh', params);
-
-        if (response.error) {
-            throw response.error;
-        } else {
-            return response.result;
-        }
+        return await this.callService('notify', 'historyFresh', params);
     }
 
     async _getUserRequiredTypes(user) {
         const result = [];
-        const options = await Model.findOne({ user }, { show: true }, { lean: true });
+        let options = await Model.findOne({ user }, { show: true }, { lean: true });
 
-        if (!options || !options.show) {
-            throw { code: 404, message: 'Not found' };
+        if (!options) {
+            options = await new Model({ user });
+
+            await options.save();
         }
 
         for (let type of Object.keys(options.show)) {
