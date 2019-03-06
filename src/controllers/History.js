@@ -21,7 +21,7 @@ class History extends BasicController {
         let options = await Model.findOne({ user }, { show: true }, { lean: true });
 
         if (!options) {
-            options = await new Model({ user });
+            options = new Model({ user });
 
             await options.save();
         }
