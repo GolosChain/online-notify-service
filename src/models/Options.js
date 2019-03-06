@@ -9,11 +9,11 @@ module.exports = MongoDB.makeModel(
             required: true,
         },
         show: {
-            vote: {
+            upvote: {
                 type: Boolean,
                 default: true,
             },
-            flag: {
+            downvote: {
                 type: Boolean,
                 default: true,
             },
