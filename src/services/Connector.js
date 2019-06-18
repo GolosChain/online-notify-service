@@ -1,4 +1,5 @@
 const core = require('gls-core-service');
+const Logger = core.utils.Logger;
 const BasicConnector = core.services.Connector;
 const env = require('../data/env');
 const History = require('../controllers/History');
@@ -12,7 +13,8 @@ class Connector extends BasicConnector {
 
         const connector = this;
 
-        this.routingMapping = new Map(); // user -> channelId -> requestId
+        this._clientIdRoutingMapping = new Map(); // clientId -> channelId
+        this._channelIdRoutingMapping = new Map(); // channelId -> clientId
         this._history = new History({ connector });
         this._options = new Options({ connector });
         this._subscribe = new Subscribe({ connector });
@@ -192,18 +194,70 @@ class Connector extends BasicConnector {
         });
     }
 
-    removeFromRoutingMapping(user, channelId) {
-        const routing = this.routingMapping.get(user);
+    addToUserRouting(user, app, channelId) {
+        const clientId = this._makeUserClientId(user, app);
+        const routes = this._clientIdRoutingMapping.get(clientId) || new Set();
 
-        if (!routing) {
+        routes.add(channelId);
+
+        this._channelIdRoutingMapping.set(channelId, clientId);
+
+        // force add routes Set if new
+        this._clientIdRoutingMapping.set(clientId, routes);
+    }
+
+    removeFromUserRouting(user, app, channelId) {
+        const clientId = this._makeUserClientId(user, app);
+        const routes = this._clientIdRoutingMapping.get(clientId);
+
+        if (!routes) {
             return;
         }
 
-        routing.delete(channelId);
+        this._removeUserRouting(clientId, channelId, routes);
+    }
 
-        if (!routing.size) {
-            this.routingMapping.delete(user);
+    removeFromUserRoutingByChannelId(channelId) {
+        const clientId = this._channelIdRoutingMapping.get(channelId);
+
+        if (!clientId) {
+            return;
         }
+
+        const routes = this._clientIdRoutingMapping.get(clientId);
+
+        if (!routes) {
+            Logger.warn('Unknown user routes for: ', clientId);
+            this._channelIdRoutingMapping.delete(channelId);
+            return;
+        }
+
+        this._removeUserRouting(clientId, channelId, routes);
+    }
+
+    _removeUserRouting(clientId, channelId, routes) {
+        routes.delete(channelId);
+        this._channelIdRoutingMapping.delete(channelId);
+
+        if (!routes.size) {
+            this._clientIdRoutingMapping.delete(clientId);
+        }
+    }
+
+    getUserRouting(user, app) {
+        const clientId = this._makeUserClientId(user, app);
+
+        return this._clientIdRoutingMapping.get(clientId);
+    }
+
+    hasUserRouting(user, app) {
+        const clientId = this._makeUserClientId(user, app);
+
+        return this._clientIdRoutingMapping.has(clientId);
+    }
+
+    _makeUserClientId(user, app) {
+        return user + app;
     }
 }
 

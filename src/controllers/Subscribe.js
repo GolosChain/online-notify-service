@@ -2,20 +2,16 @@ const core = require('gls-core-service');
 const BasicController = core.controllers.Basic;
 
 class Subscribe extends BasicController {
-    async subscribe({ user, channelId, requestId }) {
-        let routes = this.connector.routingMapping.get(user);
-
-        if (!routes) {
-            routes = new Map();
-
-            this.connector.routingMapping.set(user, routes);
-        }
-
-        routes.set(channelId, requestId);
+    async subscribe({ user, app, channelId }) {
+        this.connector.addToUserRouting(user, app, channelId);
     }
 
-    async unsubscribe({ user, channelId }) {
-        this.connector.removeFromRoutingMapping(user, channelId);
+    async unsubscribe({ user, app, channelId }) {
+        this.connector.removeFromUserRouting(user, app, channelId);
+    }
+
+    async unsubscribeByChannelId({ channelId }) {
+        this.connector.removeFromUserRoutingByChannelId(channelId);
     }
 }
 
