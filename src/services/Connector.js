@@ -22,13 +22,168 @@ class Connector extends BasicConnector {
     async start() {
         await super.start({
             serverRoutes: {
-                subscribe: this._subscribe.subscribe.bind(this._subscribe),
-                unsubscribe: this._subscribe.unsubscribe.bind(this._subscribe),
-                getOptions: this._options.getOptions.bind(this._options),
-                setOptions: this._options.setOptions.bind(this._options),
-                history: this._history.getHistory.bind(this._history),
-                historyFresh: this._history.getHistoryFresh.bind(this._history),
-                transfer: this._transfer.handle.bind(this._transfer),
+                transfer: {
+                    handler: this._transfer.handle,
+                    scope: this._transfer,
+                },
+                subscribe: {
+                    handler: this._subscribe.subscribe,
+                    scope: this._subscribe,
+                    inherits: ['identification', 'channelSpecify'],
+                    validation: {},
+                },
+                unsubscribe: {
+                    handler: this._subscribe.unsubscribe,
+                    scope: this._subscribe,
+                    inherits: ['identification', 'channelSpecify'],
+                    validation: {},
+                },
+                unsubscribeByChannel: {
+                    handler: this._subscribe.unsubscribeByChannelId,
+                    scope: this._subscribe,
+                    inherits: ['channelSpecify'],
+                    validation: {},
+                },
+                getOptions: {
+                    handler: this._options.getOptions,
+                    scope: this._options,
+                    inherits: ['identification'],
+                    validation: {},
+                },
+                setOptions: {
+                    handler: this._options.setOptions,
+                    scope: this._options,
+                    inherits: ['identification'],
+                    validation: {
+                        required: ['data'],
+                        properties: {
+                            data: {
+                                type: 'object',
+                                additionalProperties: false,
+                                validation: {
+                                    properties: {
+                                        show: {
+                                            type: 'object',
+                                            additionalProperties: false,
+                                            validation: {
+                                                properties: {
+                                                    upvote: {
+                                                        type: 'boolean',
+                                                        default: true,
+                                                    },
+                                                    downvote: {
+                                                        type: 'boolean',
+                                                        default: true,
+                                                    },
+                                                    transfer: {
+                                                        type: 'boolean',
+                                                        default: true,
+                                                    },
+                                                    reply: {
+                                                        type: 'boolean',
+                                                        default: true,
+                                                    },
+                                                    subscribe: {
+                                                        type: 'boolean',
+                                                        default: true,
+                                                    },
+                                                    unsubscribe: {
+                                                        type: 'boolean',
+                                                        default: true,
+                                                    },
+                                                    mention: {
+                                                        type: 'boolean',
+                                                        default: true,
+                                                    },
+                                                    repost: {
+                                                        type: 'boolean',
+                                                        default: true,
+                                                    },
+                                                    reward: {
+                                                        type: 'boolean',
+                                                        default: true,
+                                                    },
+                                                    curatorReward: {
+                                                        type: 'boolean',
+                                                        default: true,
+                                                    },
+                                                    witnessVote: {
+                                                        type: 'boolean',
+                                                        default: true,
+                                                    },
+                                                    witnessCancelVote: {
+                                                        type: 'boolean',
+                                                        default: true,
+                                                    },
+                                                },
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+                history: {
+                    handler: this._history.getHistory,
+                    scope: this._history,
+                    inherits: ['identification'],
+                    validation: {
+                        properties: {
+                            fromId: {
+                                type: ['string', 'null'],
+                                default: null,
+                            },
+                            limit: {
+                                type: 'number',
+                                default: 10,
+                            },
+                            markAsViewed: {
+                                type: 'boolean',
+                                default: true,
+                            },
+                            freshOnly: {
+                                type: 'boolean',
+                                default: false,
+                            },
+                        },
+                    },
+                },
+                historyFresh: {
+                    handler: this._history.getHistoryFresh,
+                    scope: this._history,
+                    inherits: ['identification'],
+                    validation: {},
+                },
+            },
+            serverDefaults: {
+                parents: {
+                    identification: {
+                        validation: {
+                            required: ['app', 'user'],
+                            properties: {
+                                app: {
+                                    type: 'string',
+                                    enum: ['cyber', 'gls'],
+                                    default: 'cyber',
+                                },
+                                user: {
+                                    type: 'string',
+                                },
+                            },
+                        },
+                    },
+                    channelSpecify: {
+                        validation: {
+                            required: ['channelId'],
+                            properties: {
+                                channelId: {
+                                    type: ['string', 'number'],
+                                },
+                            },
+                        },
+                    },
+                },
             },
             requiredClients: {
                 facade: env.GLS_FACADE_CONNECT,
