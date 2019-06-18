@@ -4,13 +4,15 @@ const BasicController = core.controllers.Basic;
 const Model = require('../models/Options');
 
 class Options extends BasicController {
-    async getOptions({ user }) {
+    async getOptions({ user, app }) {
+        // TODO -
         const model = await this.findOrCreateModel(user);
 
         return { show: model.show };
     }
 
-    async setOptions({ user, data }) {
+    async setOptions({ user, app, data }) {
+        // TODO -
         try {
             const model = await this.findOrCreateModel(user);
 

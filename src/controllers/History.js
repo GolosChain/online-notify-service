@@ -3,14 +3,16 @@ const BasicController = core.controllers.Basic;
 const Model = require('../models/Options');
 
 class History extends BasicController {
-    async getHistory({ user, fromId = null, limit = 10, markAsViewed = true, freshOnly = false }) {
+    async getHistory({ user, app, fromId, limit, markAsViewed, freshOnly }) {
+        // TODO -
         const types = await this._getUserRequiredTypes(user);
         const params = { user, types, fromId, limit, markAsViewed, freshOnly };
 
         return await this.callService('notify', 'history', params);
     }
 
-    async getHistoryFresh({ user }) {
+    async getHistoryFresh({ user, app }) {
+        // TODO -
         const types = await this._getUserRequiredTypes(user);
         const params = { user, types };
         return await this.callService('notify', 'historyFresh', params);

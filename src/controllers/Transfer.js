@@ -25,7 +25,7 @@ class Transfer extends BasicController {
         for (let user of Object.keys(data)) {
             const result = [];
 
-            if (!this.connector.routingMapping.has(user)) {
+            if (!this.connector.hasUserRouting(user, app)) { // TODO -
                 continue;
             }
 
@@ -46,7 +46,7 @@ class Transfer extends BasicController {
     }
 
     async _transferTo(user, data) {
-        const channels = this.connector.routingMapping.get(user);
+        const channels = this.connector.getUserRouting(user, app); // TODO -
 
         if (!channels) {
             // async race
@@ -62,7 +62,7 @@ class Transfer extends BasicController {
                     result: data,
                 });
             } catch (error) {
-                this.connector.removeFromRoutingMapping(user, channelId);
+                this.connector.removeFromUserRouting(user, app, channelId); // TODO -
 
                 if (error.code !== 404) {
                     Logger.error(`Fail to send notification - ${error.message}`);
