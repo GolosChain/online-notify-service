@@ -1,5 +1,4 @@
 const core = require('gls-core-service');
-const stats = core.utils.statsClient;
 const Logger = core.utils.Logger;
 const BasicController = core.controllers.Basic;
 
@@ -11,8 +10,6 @@ class Transfer extends BasicController {
     }
 
     async handle(data) {
-        const time = new Date();
-
         await this._filtrateTransferByOptions(data);
 
         if (Object.keys(data).length === 0) {
@@ -22,8 +19,6 @@ class Transfer extends BasicController {
         for (let user of Object.keys(data)) {
             await this._transferTo(user, data[user]);
         }
-
-        stats.timing('transfer_events', new Date() - time);
     }
 
     async _filtrateTransferByOptions(data) {
