@@ -257,7 +257,7 @@ class Connector extends BasicConnector {
     }
 
     _makeUserClientId(user, app) {
-        return user + app;
+        return `${user}${app}`;
     }
 }
 
