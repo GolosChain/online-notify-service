@@ -3,25 +3,26 @@ const BasicController = core.controllers.Basic;
 const Model = require('../models/Options');
 
 class History extends BasicController {
-    async getHistory({ user, fromId = null, limit = 10, markAsViewed = true, freshOnly = false }) {
-        const types = await this._getUserRequiredTypes(user);
-        const params = { user, types, fromId, limit, markAsViewed, freshOnly };
+    async getHistory({ user, app, fromId, limit, markAsViewed, freshOnly }) {
+        const types = await this._getUserRequiredTypes(user, app);
+        const params = { user, app, types, fromId, limit, markAsViewed, freshOnly };
 
         return await this.callService('notify', 'history', params);
     }
 
-    async getHistoryFresh({ user }) {
-        const types = await this._getUserRequiredTypes(user);
-        const params = { user, types };
+    async getHistoryFresh({ user, app }) {
+        const types = await this._getUserRequiredTypes(user, app);
+        const params = { user, app, types };
+
         return await this.callService('notify', 'historyFresh', params);
     }
 
-    async _getUserRequiredTypes(user) {
+    async _getUserRequiredTypes(user, app) {
         const result = [];
-        let options = await Model.findOne({ user }, { show: true }, { lean: true });
+        let options = await Model.findOne({ user, app }, { show: true }, { lean: true });
 
         if (!options) {
-            options = new Model({ user });
+            options = new Model({ user, app });
 
             await options.save();
         }

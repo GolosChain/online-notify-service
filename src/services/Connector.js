@@ -1,4 +1,5 @@
 const core = require('gls-core-service');
+const Logger = core.utils.Logger;
 const BasicConnector = core.services.Connector;
 const env = require('../data/env');
 const History = require('../controllers/History');
@@ -12,7 +13,8 @@ class Connector extends BasicConnector {
 
         const connector = this;
 
-        this.routingMapping = new Map(); // user -> channelId -> requestId
+        this._channelIdRoutingMapping = new Map(); // channelId -> clientId
+        this._clientIdRoutingMapping = new Map(); // clientId -> Set<channelId>
         this._history = new History({ connector });
         this._options = new Options({ connector });
         this._subscribe = new Subscribe({ connector });
@@ -22,13 +24,168 @@ class Connector extends BasicConnector {
     async start() {
         await super.start({
             serverRoutes: {
-                subscribe: this._subscribe.subscribe.bind(this._subscribe),
-                unsubscribe: this._subscribe.unsubscribe.bind(this._subscribe),
-                getOptions: this._options.getOptions.bind(this._options),
-                setOptions: this._options.setOptions.bind(this._options),
-                history: this._history.getHistory.bind(this._history),
-                historyFresh: this._history.getHistoryFresh.bind(this._history),
-                transfer: this._transfer.handle.bind(this._transfer),
+                transfer: {
+                    handler: this._transfer.handle,
+                    scope: this._transfer,
+                },
+                subscribe: {
+                    handler: this._subscribe.subscribe,
+                    scope: this._subscribe,
+                    inherits: ['identification', 'channelSpecify'],
+                    validation: {},
+                },
+                unsubscribe: {
+                    handler: this._subscribe.unsubscribe,
+                    scope: this._subscribe,
+                    inherits: ['identification', 'channelSpecify'],
+                    validation: {},
+                },
+                unsubscribeByChannel: {
+                    handler: this._subscribe.unsubscribeByChannelId,
+                    scope: this._subscribe,
+                    inherits: ['channelSpecify'],
+                    validation: {},
+                },
+                getOptions: {
+                    handler: this._options.getOptions,
+                    scope: this._options,
+                    inherits: ['identification'],
+                    validation: {},
+                },
+                setOptions: {
+                    handler: this._options.setOptions,
+                    scope: this._options,
+                    inherits: ['identification'],
+                    validation: {
+                        required: ['data'],
+                        properties: {
+                            data: {
+                                type: 'object',
+                                additionalProperties: false,
+                                validation: {
+                                    properties: {
+                                        show: {
+                                            type: 'object',
+                                            additionalProperties: false,
+                                            validation: {
+                                                properties: {
+                                                    upvote: {
+                                                        type: 'boolean',
+                                                        default: true,
+                                                    },
+                                                    downvote: {
+                                                        type: 'boolean',
+                                                        default: true,
+                                                    },
+                                                    transfer: {
+                                                        type: 'boolean',
+                                                        default: true,
+                                                    },
+                                                    reply: {
+                                                        type: 'boolean',
+                                                        default: true,
+                                                    },
+                                                    subscribe: {
+                                                        type: 'boolean',
+                                                        default: true,
+                                                    },
+                                                    unsubscribe: {
+                                                        type: 'boolean',
+                                                        default: true,
+                                                    },
+                                                    mention: {
+                                                        type: 'boolean',
+                                                        default: true,
+                                                    },
+                                                    repost: {
+                                                        type: 'boolean',
+                                                        default: true,
+                                                    },
+                                                    reward: {
+                                                        type: 'boolean',
+                                                        default: true,
+                                                    },
+                                                    curatorReward: {
+                                                        type: 'boolean',
+                                                        default: true,
+                                                    },
+                                                    witnessVote: {
+                                                        type: 'boolean',
+                                                        default: true,
+                                                    },
+                                                    witnessCancelVote: {
+                                                        type: 'boolean',
+                                                        default: true,
+                                                    },
+                                                },
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+                history: {
+                    handler: this._history.getHistory,
+                    scope: this._history,
+                    inherits: ['identification'],
+                    validation: {
+                        properties: {
+                            fromId: {
+                                type: ['string', 'null'],
+                                default: null,
+                            },
+                            limit: {
+                                type: 'number',
+                                default: 10,
+                            },
+                            markAsViewed: {
+                                type: 'boolean',
+                                default: true,
+                            },
+                            freshOnly: {
+                                type: 'boolean',
+                                default: false,
+                            },
+                        },
+                    },
+                },
+                historyFresh: {
+                    handler: this._history.getHistoryFresh,
+                    scope: this._history,
+                    inherits: ['identification'],
+                    validation: {},
+                },
+            },
+            serverDefaults: {
+                parents: {
+                    identification: {
+                        validation: {
+                            required: ['app', 'user'],
+                            properties: {
+                                app: {
+                                    type: 'string',
+                                    enum: ['cyber', 'gls'],
+                                    default: 'cyber',
+                                },
+                                user: {
+                                    type: 'string',
+                                },
+                            },
+                        },
+                    },
+                    channelSpecify: {
+                        validation: {
+                            required: ['channelId'],
+                            properties: {
+                                channelId: {
+                                    type: ['string', 'number'],
+                                },
+                            },
+                        },
+                    },
+                },
             },
             requiredClients: {
                 facade: env.GLS_FACADE_CONNECT,
@@ -37,18 +194,70 @@ class Connector extends BasicConnector {
         });
     }
 
-    removeFromRoutingMapping(user, channelId) {
-        const routing = this.routingMapping.get(user);
+    addToUserRouting(user, app, channelId) {
+        const clientId = this._makeUserClientId(user, app);
+        const routes = this._clientIdRoutingMapping.get(clientId) || new Set();
 
-        if (!routing) {
+        routes.add(channelId);
+
+        this._channelIdRoutingMapping.set(channelId, clientId);
+
+        // force add routes Set if new
+        this._clientIdRoutingMapping.set(clientId, routes);
+    }
+
+    removeFromUserRouting(user, app, channelId) {
+        const clientId = this._makeUserClientId(user, app);
+        const routes = this._clientIdRoutingMapping.get(clientId);
+
+        if (!routes) {
             return;
         }
 
-        routing.delete(channelId);
+        this._removeUserRouting(clientId, channelId, routes);
+    }
 
-        if (!routing.size) {
-            this.routingMapping.delete(user);
+    removeFromUserRoutingByChannelId(channelId) {
+        const clientId = this._channelIdRoutingMapping.get(channelId);
+
+        if (!clientId) {
+            return;
         }
+
+        const routes = this._clientIdRoutingMapping.get(clientId);
+
+        if (!routes) {
+            Logger.warn('Unknown user routes for: ', clientId);
+            this._channelIdRoutingMapping.delete(channelId);
+            return;
+        }
+
+        this._removeUserRouting(clientId, channelId, routes);
+    }
+
+    _removeUserRouting(clientId, channelId, routes) {
+        routes.delete(channelId);
+        this._channelIdRoutingMapping.delete(channelId);
+
+        if (!routes.size) {
+            this._clientIdRoutingMapping.delete(clientId);
+        }
+    }
+
+    getUserRouting(user, app) {
+        const clientId = this._makeUserClientId(user, app);
+
+        return this._clientIdRoutingMapping.get(clientId);
+    }
+
+    hasUserRouting(user, app) {
+        const clientId = this._makeUserClientId(user, app);
+
+        return this._clientIdRoutingMapping.has(clientId);
+    }
+
+    _makeUserClientId(user, app) {
+        return `${user}${app}`;
     }
 }
 

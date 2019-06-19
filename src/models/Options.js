@@ -8,6 +8,11 @@ module.exports = MongoDB.makeModel(
             type: String,
             required: true,
         },
+        app: {
+            type: String,
+            enum: ['gls', 'cyber'],
+            required: true,
+        },
         show: {
             upvote: {
                 type: Boolean,
@@ -49,10 +54,6 @@ module.exports = MongoDB.makeModel(
                 type: Boolean,
                 default: true,
             },
-            message: {
-                type: Boolean,
-                default: true,
-            },
             witnessVote: {
                 type: Boolean,
                 default: true,
@@ -68,6 +69,7 @@ module.exports = MongoDB.makeModel(
             {
                 fields: {
                     user: 1,
+                    app: 1,
                 },
                 options: {
                     unique: true,

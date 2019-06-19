@@ -1,38 +1,30 @@
 const core = require('gls-core-service');
-const stats = core.utils.statsClient;
 const Logger = core.utils.Logger;
 const BasicController = core.controllers.Basic;
 const Model = require('../models/Options');
 
 class Options extends BasicController {
-    async getOptions({ user }) {
-        const time = new Date();
-        const model = await this.findOrCreateModel(user);
+    async getOptions({ user, app }) {
+        const model = await this.findOrCreateModel(user, app);
 
-        stats.timing('get_options', new Date() - time);
         return { show: model.show };
     }
 
-    async setOptions({ user, data }) {
-        const time = new Date();
-
+    async setOptions({ user, app, data }) {
         try {
-            const model = await this.findOrCreateModel(user);
+            const model = await this.findOrCreateModel(user, app);
 
             model.show = Object.assign({}, model.show, data.show);
 
             await model.save();
-
-            stats.timing('set_options', new Date() - time);
         } catch (error) {
             Logger.error(error);
-            stats.increment('options_invalid_request');
             throw { code: 400, message: 'Invalid params' };
         }
     }
 
-    async findOrCreateModel(user) {
-        let model = await Model.findOne({ user });
+    async findOrCreateModel(user, app) {
+        let model = await Model.findOne({ user, app });
 
         if (!model) {
             model = await new Model({ user });
