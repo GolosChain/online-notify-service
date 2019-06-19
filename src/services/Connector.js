@@ -13,8 +13,8 @@ class Connector extends BasicConnector {
 
         const connector = this;
 
-        this._clientIdRoutingMapping = new Map(); // clientId -> channelId
         this._channelIdRoutingMapping = new Map(); // channelId -> clientId
+        this._clientIdRoutingMapping = new Map(); // clientId -> Set<channelId>
         this._history = new History({ connector });
         this._options = new Options({ connector });
         this._subscribe = new Subscribe({ connector });

@@ -5,16 +5,14 @@ const Model = require('../models/Options');
 
 class Options extends BasicController {
     async getOptions({ user, app }) {
-        // TODO -
-        const model = await this.findOrCreateModel(user);
+        const model = await this.findOrCreateModel(user, app);
 
         return { show: model.show };
     }
 
     async setOptions({ user, app, data }) {
-        // TODO -
         try {
-            const model = await this.findOrCreateModel(user);
+            const model = await this.findOrCreateModel(user, app);
 
             model.show = Object.assign({}, model.show, data.show);
 
@@ -25,8 +23,8 @@ class Options extends BasicController {
         }
     }
 
-    async findOrCreateModel(user) {
-        let model = await Model.findOne({ user });
+    async findOrCreateModel(user, app) {
+        let model = await Model.findOne({ user, app });
 
         if (!model) {
             model = await new Model({ user });
