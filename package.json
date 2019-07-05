@@ -27,7 +27,7 @@
   "author": "golos.io",
   "license": "GPL-3.0",
   "dependencies": {
-    "gls-core-service": "^3.31.1",
+    "gls-core-service": "^3.42.0",
     "ramda": "^0.25.0"
   }
 }
