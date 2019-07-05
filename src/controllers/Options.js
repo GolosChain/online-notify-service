@@ -27,7 +27,7 @@ class Options extends BasicController {
         let model = await Model.findOne({ user, app });
 
         if (!model) {
-            model = await new Model({ user });
+            model = await new Model({ user, app });
 
             await model.save();
         }
