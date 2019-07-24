@@ -108,6 +108,10 @@ class Connector extends BasicConnector {
                                                         type: 'boolean',
                                                         default: true,
                                                     },
+                                                    benefeciaryReward: {
+                                                        type: 'boolean',
+                                                        default: true,
+                                                    },
                                                     witnessVote: {
                                                         type: 'boolean',
                                                         default: true,

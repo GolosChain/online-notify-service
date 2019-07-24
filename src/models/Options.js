@@ -54,6 +54,10 @@ module.exports = MongoDB.makeModel(
                 type: Boolean,
                 default: true,
             },
+            benefeciaryReward: {
+                type: Boolean,
+                default: true,
+            },
             witnessVote: {
                 type: Boolean,
                 default: true,

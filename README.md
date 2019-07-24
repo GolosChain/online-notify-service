@@ -55,6 +55,7 @@ setOptions:                              // Установить настрой�
             repost <boolean>             // репост
             reward <boolean>             // награда пользователю
             curatorReward <boolean>      // награда куратору
+            benefeciaryReward <boolean>  // награда бенефициару
             witnessVote <boolean>        // голос за делегата
             witnessCancelVote <boolean>  // отмена голоса за делегата
 
